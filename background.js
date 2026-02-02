@@ -14,6 +14,16 @@ browser.runtime.onMessage.addListener(async (msg, sender) => {
         const isEnabled = result[storageKey] !== false;        
         return { EXTENSION_ENABLED: isEnabled };
     }
+    console.log("background got msg")
+    console.log(msg)
+    if (msg.is_icon_on == true) {
+        console.log("icon = ON!")
+        browser.browserAction.setIcon({ path: "icons/icons8-save-48.png" });
+    }
+    if (msg.is_icon_on == false) {
+        console.log("icon = OFF!")
+        browser.browserAction.setIcon({ path: "icons/icons8-save-48-grey.png" });
+    }
 });
 
 

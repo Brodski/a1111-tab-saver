@@ -1,6 +1,6 @@
 document.addEventListener("DOMContentLoaded", async (e) => {
     console.log('popup.js loading.....')
-    initToggleTab()
+    // initToggleTab()
     initToggleALL()
 })
 

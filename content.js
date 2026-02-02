@@ -1,3 +1,6 @@
+
+let EXTENSION_ENABLED = true;
+
 //////////////////////
 //                  //
 //       INIT       //
@@ -14,26 +17,26 @@ else {
 
 
 async function shittyPageWaitLoad(prev_inputz_length) {
-    let isEnabled = isA1TabSaverEnabled()
-    if (isEnabled == false) {
-        console.log("-- EXTENSION IS OFF --")
-        return
-    }
+    await isA1TabSaverEnabled()
+    // if (EXTENSION_ENABLED == false) {
+    //     console.log("-- EXTENSION IS OFF --")
+    //     return
+    // }
     let current_inputz_length = (document.querySelectorAll("input")).length
-    if (current_inputz_length <= prev_inputz_length) {
-        setTimeout(() => {
-            shittyPageWaitLoad(current_inputz_length)
-        }, 2000);
-    }
-    else {
+    // if (current_inputz_length <= prev_inputz_length) {
+    if (current_inputz_length > prev_inputz_length) {
         /////////////
         // KICK IT //
         /////////////
         console.log("TIME TO KICKIT")
         kickIt()
     }
+    else {
+        setTimeout(() => {
+            shittyPageWaitLoad(current_inputz_length)
+        }, 2000);
+    }
 }
-
 
 
 
@@ -42,27 +45,21 @@ async function shittyPageWaitLoad(prev_inputz_length) {
 //   GET INIT STATE    //
 //                     //
 /////////////////////////
-
-let EXTENSION_ENABLED = true;
-
-
 async function isA1TabSaverEnabled() {
+    console.log("checking if enabled.........")
     const [isGlobal, isTab] = await Promise.all([
         isEnabledGlobal(),
         isEnabledTab() // 100% returns 'true' --> I TURED OFF
     ]);
     console.log("isGlobal", isGlobal)
-    console.log("isTab", isTab)    
-    if (isTab || isGlobal) {
+    if (isGlobal) {
         EXTENSION_ENABLED = true
+        browser.runtime.sendMessage({ is_icon_on: true });
     }
-    if (isGlobal == false) {
+    if (!isGlobal) {
         EXTENSION_ENABLED = false
+        browser.runtime.sendMessage({ is_icon_on: false });
     }
-    if (isTab == false) {
-        EXTENSION_ENABLED = false
-    }
-
 }
 
 async function isEnabledGlobal() {
@@ -73,7 +70,6 @@ async function isEnabledGlobal() {
         onOff = false
     } else {
         onOff = true
-        start();
     }
     return onOff
 }
@@ -97,23 +93,17 @@ async function isEnabledTab() {
 // Listen for toggle changes
 browser.runtime.onMessage.addListener(msg => {
     if (msg.type === "TOGGLE" || msg.type == "toggleExtension") {
-        console.log("msg")
+        console.log("content send msg")
         console.log(msg)
-        EXTENSION_ENABLED = msg.EXTENSION_ENABLED;
-            if (EXTENSION_ENABLED) {
-                start();
-            } else {
-                stop();
+        EXTENSION_ENABLED = msg.enabled;
+        if (EXTENSION_ENABLED) {
+            browser.runtime.sendMessage({ is_icon_on: true });
+        } else {
+            browser.runtime.sendMessage({ is_icon_on: false });
         }
     }
 });
 
-function start() {
-  console.log("Extension ON");
-}
-function stop() {
-  console.log("Extension disabled");
-}
 
 function kickIt() {
     //////////////////////////
@@ -131,10 +121,19 @@ function kickIt() {
     else {
         console.log('session_params=', session)
         setTimeout(() => {
+            //
+            //
+            //  BOOM 
+            //
+            //
             restoreAll(session);
         }, 3000);
         
-        
+        ///////////////////////////////////////////
+        //                                       //
+        //     GENERATE A NEW SESSION/PARAM      //
+        //                                       //
+        ///////////////////////////////////////////
         browser.runtime.sendMessage({
             type: "getAllUrls"
         }).then(response => {
@@ -153,11 +152,11 @@ function kickIt() {
                     let tab_url = new URL(tab.url);
                     let tab_session = tab_url.searchParams.get("session")
                     if (tab_url.host == "127.0.0.1:7860" && tab_session == session) { 
-                            console.log("CREATED NEW SESSION")
-                            console.log("CREATED NEW SESSION")
-                            console.log("CREATED NEW SESSION")
-                            console.log("CREATED NEW SESSION")
-                            console.log("CREATED NEW SESSION")
+                            console.log("CREATING NEW SESSION")
+                            console.log("CREATING NEW SESSION")
+                            console.log("CREATING NEW SESSION")
+                            console.log("CREATING NEW SESSION")
+                            console.log("CREATING NEW SESSION")
                             // let session_dedup = incrementIdPro()
                             let session_dedup = makeId()
                             url.searchParams.set("session", session_dedup);
@@ -181,6 +180,11 @@ function kickIt() {
             clearTimeout(timeoutId)
             timeoutId = setTimeout(() => {  
                 console.log('Value changed to:', event.target.value);
+                //
+                //
+                //  BOOM 
+                //
+                //
                 saveAll()
             }, 2000)
         });
@@ -197,7 +201,8 @@ function kickIt() {
 
 
 
-function saveAll() {
+async function saveAll() {
+    await isA1TabSaverEnabled()
     if (EXTENSION_ENABLED == false) {
         console.log("NOT SAVING B/C OFF")
         return
@@ -232,12 +237,13 @@ function saveAll() {
     console.log('Saved:', savedData);
 }
 
-function restoreAll(session) {
+async function restoreAll(session) {
+    await isA1TabSaverEnabled()
     let saved = localStorage.getItem(session);
     if (!saved) {
         console.log("ℹ️ no session found")
     }
-    if (saved) {
+    if (saved && EXTENSION_ENABLED) {
         let savedData = JSON.parse(saved);
         let EVERY_INPUT = getEveryInput();
         for (let [i, inp] of EVERY_INPUT.entries()) {
@@ -245,7 +251,6 @@ function restoreAll(session) {
             if (key in savedData) {                
                 if (inp.type === 'file') {
                     // console.log("SKIP - IS FILE TYPE!!!")
-                    // console.log(inp)
                     continue
                 }
                 if (inp.type === 'checkbox' || inp.type === 'radio') {
@@ -262,6 +267,8 @@ function restoreAll(session) {
                 }
             }
         }
+        
+        console.log(" SAVE COMPLETE! ")
     }
 }
 
