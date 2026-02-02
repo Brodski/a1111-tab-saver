@@ -1,0 +1,35 @@
+{
+  "manifest_version": 2,
+  "name": "My Firefox Extension",
+  "version": "1.0",
+  "description": "A basic Firefox extension boilerplate",
+  
+  "icons": {
+    "48": "icons/icon-48.png",
+    "96": "icons/icon-96.png"
+  },
+
+  "permissions": [
+    "activeTab",
+    "tabs",
+    "sessions",
+    "storage"
+  ],
+
+  "browser_action": {
+    "default_icon": "icons/icon-48.png",
+    "default_title": "My Extension",
+    "default_popup": "popup/popup.html"
+  },
+
+  "background": {
+    "scripts": ["background.js"]
+  },
+
+  "content_scripts": [
+    {
+      "matches": ["<all_urls>"],
+      "js": ["content.js"]
+    }
+  ]
+}

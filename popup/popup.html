@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Extension Popup</title>
+    <link rel="stylesheet" href="popup.css">
+</head>
+    <body>
+    <div class="container">
+        <h1>My Extension</h1>
+        <p>Welcome to your Firefox extension!</p>
+        <button id="actionButton">Click Me</button>
+        <div>
+            <label>
+                <input type="checkbox" id="toggleSwitch">
+                Enable extension tab
+            </label>
+        </div>
+        <div>
+            <label>
+                <input type="checkbox" id="toggleAll">
+                Enable extension GLOBALLY
+            </label>
+        </div>
+    </div>
+        
+    <div id="refreshNotice">
+        You must refresh the page
+    </div>
+    <script src="popup.js"></script>
+</body>
+</html>
