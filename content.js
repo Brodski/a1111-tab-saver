@@ -46,12 +46,11 @@ async function shittyPageWaitLoad(prev_inputz_length) {
 //                     //
 /////////////////////////
 async function isA1TabSaverEnabled() {
-    console.log("checking if enabled.........")
     const [isGlobal, isTab] = await Promise.all([
         isEnabledGlobal(),
         isEnabledTab() // 100% returns 'true' --> I TURED OFF
     ]);
-    console.log("isGlobal", isGlobal)
+
     if (isGlobal) {
         EXTENSION_ENABLED = true
         browser.runtime.sendMessage({ is_icon_on: true });
@@ -60,6 +59,7 @@ async function isA1TabSaverEnabled() {
         EXTENSION_ENABLED = false
         browser.runtime.sendMessage({ is_icon_on: false });
     }
+    console.log("Enabled extension: ", EXTENSION_ENABLED)
 }
 
 async function isEnabledGlobal() {
@@ -175,11 +175,12 @@ function kickIt() {
     let EVERY_INPUT = getEveryInput()
     for (let inp of EVERY_INPUT) {
         let timeoutId;
-        inp.addEventListener('input', (event) => {
+
+        const handleChange = (value) => {
             console.log('input changed stuff.........')
             clearTimeout(timeoutId)
             timeoutId = setTimeout(() => {  
-                console.log('Value changed to:', event.target.value);
+                console.log('Value changed to:', value);
                 //
                 //
                 //  BOOM 
@@ -187,7 +188,20 @@ function kickIt() {
                 //
                 saveAll()
             }, 2000)
-        });
+        };
+        // Handle gradio's dropdowns
+        if (inp.getAttribute('autocomplete') === 'off') {
+            inp.addEventListener('blur', (event) => {
+                console.log('XXXXXXXXXXXXXinput changed stuff.........')
+                handleChange(event.target.value)
+            })
+        }
+        // Handle everything else
+        else {
+            inp.addEventListener('input', (event) => {
+                handleChange(event.target.value)
+            });
+        }
     }
 
     /////////////////////
@@ -207,25 +221,18 @@ async function saveAll() {
         console.log("NOT SAVING B/C OFF")
         return
     }
-    console.log("------- SAVED -------")
     let EVERY_INPUT = getEveryInput()
     let savedData = {};
-
     for (let [i, inp] of EVERY_INPUT.entries()) {
         let key = `input_${i}`;
 
-        // Save the value based on input type
         if (inp.type === 'file') {
-            console.log("IS FILE TYPE!!!")
-            console.log(inp)
             savedData[key] = "file type"
             continue
         }
         if (inp.type === 'checkbox' || inp.type === 'radio') {
             savedData[key] = inp.checked;
         } else {
-            // console.log(inp)
-            // console.log(key, inp.value)
             savedData[key] = inp.value;
         }
 
@@ -240,6 +247,7 @@ async function saveAll() {
 async function restoreAll(session) {
     await isA1TabSaverEnabled()
     let saved = localStorage.getItem(session);
+    console.log("restoring session=", session)
     if (!saved) {
         console.log("ℹ️ no session found")
     }
@@ -248,7 +256,7 @@ async function restoreAll(session) {
         let EVERY_INPUT = getEveryInput();
         for (let [i, inp] of EVERY_INPUT.entries()) {
             let key = `input_${i}`;
-            if (key in savedData) {                
+            if (key in savedData) {
                 if (inp.type === 'file') {
                     // console.log("SKIP - IS FILE TYPE!!!")
                     continue
@@ -268,7 +276,7 @@ async function restoreAll(session) {
             }
         }
         
-        console.log(" SAVE COMPLETE! ")
+        console.log(" RESTORE COMPLETE! ")
     }
 }
 
