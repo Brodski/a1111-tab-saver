@@ -1,7 +1,3 @@
-
-let EXTENSION_ENABLED = true;
-
-
 //////////////////////
 //                  //
 //       INIT       //
@@ -17,8 +13,9 @@ else {
 }
 
 
-function shittyPageWaitLoad(prev_inputz_length) {
-    if (EXTENSION_ENABLED == false) {
+async function shittyPageWaitLoad(prev_inputz_length) {
+    let isEnabled = isA1TabSaverEnabled()
+    if (isEnabled == false) {
         console.log("-- EXTENSION IS OFF --")
         return
     }
@@ -46,27 +43,56 @@ function shittyPageWaitLoad(prev_inputz_length) {
 //                     //
 /////////////////////////
 
-// GLOBAL is on/off?
-browser.storage.local.get("EXTENSION_ENABLED").then(function(result) {
+let EXTENSION_ENABLED = true;
+
+
+async function isA1TabSaverEnabled() {
+    const [isGlobal, isTab] = await Promise.all([
+        isEnabledGlobal(),
+        isEnabledTab() // 100% returns 'true' --> I TURED OFF
+    ]);
+    console.log("isGlobal", isGlobal)
+    console.log("isTab", isTab)    
+    if (isTab || isGlobal) {
+        EXTENSION_ENABLED = true
+    }
+    if (isGlobal == false) {
+        EXTENSION_ENABLED = false
+    }
+    if (isTab == false) {
+        EXTENSION_ENABLED = false
+    }
+
+}
+
+async function isEnabledGlobal() {
+    // GLOBAL is on/off?
+    let onOff = true;
+    let result = await browser.storage.local.get("EXTENSION_ENABLED")
     if (result.EXTENSION_ENABLED === false) {
-        EXTENSION_ENABLED = false;
+        onOff = false
     } else {
-        EXTENSION_ENABLED = true;
+        onOff = true
         start();
     }
-});
-// Tab is on/off?
-browser.runtime.sendMessage({ type: 'checkEnabledTab' }).then(response => {
-    console.log("response")
-    console.log(response)
-    if (response.EXTENSION_ENABLED == false) {
-        EXTENSION_ENABLED = false;
-    }
-    else {
-        EXTENSION_ENABLED = true;
-        start()
-    }
-});
+    return onOff
+}
+async function isEnabledTab() {
+    return true    
+    // // Tab is on/off?
+    // let onOff = true;
+    // let response = await browser.runtime.sendMessage({ type: 'checkEnabledTab' })
+    // console.log("is tab?")
+    // console.log(response)
+    // if (response.EXTENSION_ENABLED == false) {
+    //     onOff = false
+    // }
+    // else {
+    //     onOff = true
+    //     start()
+    // }
+    // return onOff
+}
 
 // Listen for toggle changes
 browser.runtime.onMessage.addListener(msg => {

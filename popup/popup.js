@@ -55,7 +55,7 @@ async function initToggleALL() {
     ///////////////////////////
     //   SET UP TOGGLE ALL   //
     ///////////////////////////
-    const toggleall = document.getElementById("toggle");
+    const toggleall = document.getElementById("toggleAll");
     // Load current state
     browser.storage.local.get("EXTENSION_ENABLED").then(function(result) {
         console.log("EXTENSION_ENABLED REZZZULT")
@@ -66,8 +66,12 @@ async function initToggleALL() {
         } else {
             toggleall.checked = true;
         }
+
+        if (!toggleall.checked) {
+            // greyOutCheckboxTab()
+        }
+
     });
-    // Save on change
     toggleall.addEventListener("change", () => {
         browser.storage.local.set({ "EXTENSION_ENABLED": toggleall.checked });
 
@@ -76,14 +80,26 @@ async function initToggleALL() {
             for (const tab of tabs) {
                 browser.tabs.sendMessage(tab.id, {
                     type: "TOGGLE",
-                    enabled: toggle.checked
+                    enabled: toggleall.checked
                 }).catch(() => {});
             }
         })
 
-        //     var refreshNotice = document.getElementById("refreshNotice");
-        //     refreshNotice.style.display = "block";
-        // });
+        // greyOutCheckboxTab()
+
+        var refreshNotice = document.getElementById("refreshNotice");
+        refreshNotice.style.display = "block";
 
     });
+}
+
+function greyOutCheckboxTab() {
+    const toggleall = document.getElementById("toggleAll");
+    if (!toggleall.checked) {
+        const tabCheckbox = document.getElementById('toggleSwitch');
+        const label = tabCheckbox.closest('label');
+
+        tabCheckbox.disabled = true;
+        label.classList.add('disabled');
+    }
 }

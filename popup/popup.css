@@ -50,3 +50,21 @@ button:hover {
 button:active {
   background-color: #002275;
 }
+
+
+label.disabled {
+    pointer-events: none;
+    color: #999;
+}
+label.disabled {
+    color: #999;
+    cursor: not-allowed;
+}
+
+label.disabled input {
+    cursor: not-allowed;
+}
+
+label.disabled input:disabled {
+    accent-color: #bbb; /* modern browsers */
+}
