@@ -18,18 +18,14 @@ else {
 
 async function shittyPageWaitLoad(prev_inputz_length) {
     await isA1TabSaverEnabled()
-    // if (EXTENSION_ENABLED == false) {
-    //     console.log("-- EXTENSION IS OFF --")
-    //     return
-    // }
     let current_inputz_length = (document.querySelectorAll("input")).length
-    // if (current_inputz_length <= prev_inputz_length) {
     if (current_inputz_length > prev_inputz_length) {
         /////////////
         // KICK IT //
         /////////////
         console.log("TIME TO KICKIT")
         kickIt()
+        return
     }
     else {
         setTimeout(() => {
@@ -237,10 +233,22 @@ async function saveAll() {
         }
 
     }
-    
+    savedData['timestamp'] = Date.now();
+
     let url = new URL(window.location.href);
     let session = url.searchParams.get("session")
-    localStorage.setItem(session, JSON.stringify(savedData));
+    try {
+        localStorage.setItem(session, JSON.stringify(savedData));
+    } catch (e) {
+        if (e.name === 'QuotaExceededError' || e.name === 'NS_ERROR_DOM_QUOTA_REACHED') {
+            console.log("Storage full, removing least recently accessed item...");
+            freeOldestItem(20);
+            localStorage.setItem(session, JSON.stringify(savedData));
+        } else {
+            throw e;
+        }
+    }
+
     console.log('Saved:', savedData);
 }
 
@@ -277,6 +285,32 @@ async function restoreAll(session) {
         }
         
         console.log(" RESTORE COMPLETE! ")
+    }
+}
+
+function freeOldestItem(numDelete = 1) {
+    const items = [];
+
+    // Collect all items with their timestamps
+    for (let i = 0; i < localStorage.length; i++) {
+        const key = localStorage.key(i);
+        try {
+            const item = JSON.parse(localStorage.getItem(key));
+            if (item.timestamp) {
+                items.push({ key, timestamp: item.timestamp });
+            }
+        } catch {
+            // ignore non-JSON entries
+        }
+    }
+
+    // Sort by timestamp ascending (oldest first)
+    items.sort((a, b) => a.timestamp - b.timestamp);
+
+    // Remove the oldest numDelete items
+    for (let i = 0; i < Math.min(numDelete, items.length); i++) {
+        localStorage.removeItem(items[i].key);
+        console.log('Removed:', items[i].key);
     }
 }
 

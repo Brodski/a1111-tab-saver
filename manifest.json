@@ -1,34 +1,43 @@
 {
-  "manifest_version": 2,
-  "name": "A111 Save All Work",
-  "version": "1.0",
-  "description": "Saves the current page state",
-  
-  "icons": {
-    "48": "icons/icons8-save-48.png"
-  },
+    "manifest_version": 2,
+    "name": "A111 Save All Work",
+    "version": "0.2",
+    "description": "Saves the current page state",
+    
+	"browser_specific_settings": {
+		"gecko": {
+			"id": "cbrodski@gmail.com",
+      "data_collection_permissions": {
+        "required": ["none"]
+      }
+		}
+	},
 
-  "permissions": [
-    "activeTab",
-    "tabs",
-    "sessions",
-    "storage"
-  ],
+    "icons": {
+        "48": "icons/icons8-save-48.png"
+    },
 
-  "browser_action": {
-    "default_icon":  "icons/icons8-save-48.png",
-    "default_title": "My Extension",
-    "default_popup": "popup/popup.html"
-  },
+    "permissions": [
+        "activeTab",
+        "tabs",
+        "sessions",
+        "storage"
+    ],
 
-  "background": {
-    "scripts": ["background.js"]
-  },
+    "browser_action": {
+        "default_icon": "icons/icons8-save-48.png",
+        "default_title": "A111 Save All Work",
+        "default_popup": "popup/popup.html"
+    },
 
-  "content_scripts": [
-    {
-      "matches": ["<all_urls>"],
-      "js": ["content.js"]
-    }
-  ]
+    "background": {
+        "scripts": ["background.js"]
+    },
+
+    "content_scripts": [
+        {
+            "matches": ["<all_urls>"],
+            "js": ["content.js"]
+        }
+    ]
 }
